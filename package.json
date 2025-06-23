@@ -1,0 +1,21 @@
+{
+  "name": "point-break-chat-app",
+  "version": "1.0.0",
+  "description": "A real-time desktop chat app using Electron, Socket.IO, and Node.js",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "server": "nodemon server.js"
+  },
+  "author": "Fergal Fernandes",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.3.5",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "nodemon": "^3.1.10"
+  }
+}

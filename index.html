@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Point Break</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #ffffff 50%, #000000 50%);
+      color: white;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 36px;
+      background-color: rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 10px #000;
+      border-bottom: 2px solid #0f5cfc;
+    }
+
+    .navbar h1 {
+      font-size: 26px;
+      color: #0f5cfc;
+      text-shadow: 0 0 6px #0f5cfc, 0 0 12px #0f5cfc;
+    }
+
+    .profile {
+      color: white;
+      font-size: 16px;
+      padding: 10px 18px;
+      border: 1px solid #0f5cfc;
+      border-radius: 6px;
+      box-shadow: 0 0 6px #0f5cfc;
+      background-color: #0a0a0a;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px;
+    }
+
+    input, button {
+      margin: 6px;
+      padding: 12px;
+      background-color: #0f0f30;
+      border: 2px solid #0f5cfc;
+      color: white;
+      border-radius: 6px;
+      font-size: 16px;
+      box-shadow: 0 0 6px #0f5cfc;
+    }
+
+    input[type="text"] {
+      width: 320px;
+    }
+
+    input::placeholder {
+      color: #cccccc;
+    }
+
+    button:hover {
+      background-color: #112244;
+      cursor: pointer;
+    }
+
+    ul#messages {
+      list-style: none;
+      padding: 0;
+      margin-top: 24px;
+      width: 90%;
+      max-width: 700px;
+      border: 2px solid #0f5cfc;
+      border-radius: 10px;
+      background-color: #0f0f30;
+      box-shadow: 0 0 10px #0f5cfc;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    li {
+      padding: 12px;
+      border-bottom: 1px solid #1c1c3a;
+      color: white;
+    }
+
+    .msg-box {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h1>Point Break</h1>
+    <div class="profile" id="profileBox">Guest</div>
+  </div>
+
+  <div class="container">
+    <input id="username" type="text" placeholder="Enter your name..." />
+    <button onclick="registerUser()">Join</button>
+
+    <ul id="messages"></ul>
+
+    <div class="msg-box">
+      <input id="receiver" type="text" placeholder="To (username)" />
+      <input id="msgInput" type="text" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io("http://localhost:5001");
+    let currentUser = "";
+
+    const usernameInput = document.getElementById("username");
+    const receiverInput = document.getElementById("receiver");
+    const msgInput = document.getElementById("msgInput");
+    const messages = document.getElementById("messages");
+    const profileBox = document.getElementById("profileBox");
+
+    function registerUser() {
+      const username = usernameInput.value.trim();
+      if (!username) return alert("Enter username first.");
+      currentUser = username;
+      profileBox.textContent = username;
+      socket.emit("register", username);
+      addMessage("You joined the chat.", "#aaaaaa");
+    }
+
+    function sendMessage() {
+      const receiver = receiverInput.value.trim();
+      const content = msgInput.value.trim();
+      if (!receiver || !content) return alert("Enter recipient and message!");
+      addMessage(`You to ${receiver}: ${content}`, "#87cefa");
+      socket.emit("private_message", {
+        sender: currentUser,
+        receiver: receiver,
+        content: content
+      });
+      msgInput.value = "";
+    }
+
+    function addMessage(text, color) {
+      const li = document.createElement("li");
+      li.innerText = text;
+      li.style.color = color;
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    socket.on("private_message", (data) => {
+      addMessage(`${data.sender}: ${data.content}`, "white");
+    });
+
+    socket.on("user_joined", (username) => {
+      if (username !== currentUser) {
+        addMessage(`${username} joined the chat.`, "#cccccc");
+      }
+    });
+  </script>
+</body>
+</html>
